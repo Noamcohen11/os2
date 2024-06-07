@@ -77,20 +77,18 @@ struct Thread
 };
 Thread *threads[MAX_THREAD_NUM];
 
-
-
 void __yield(int tid)
 {
     int ret_val = sigsetjmp(threads[current_thread]->env, 1);
     bool did_just_save_bookmark = ret_val == 0;
     if (did_just_save_bookmark)
     {
+        std::cout << "tid " << tid << std::endl;
         current_thread = tid;
         realtime++;
         threads[tid]->virtualtime++;
         siglongjmp(threads[tid]->env, 1);
     }
-
 }
 
 void __setup_thread(int tid, char *stack, thread_entry_point entry_point)
@@ -133,7 +131,6 @@ void __time_handler(int sig)
     readyQueue->push_back(current_thread);
     __thread_popper();
 }
-
 
 void __free_thread(int tid)
 {
@@ -184,7 +181,6 @@ void __timer_setup(int quantum_usecs)
     }
 }
 
-
 // TODO: understand how to malloc in cpp.
 
 /**
@@ -212,7 +208,8 @@ int uthread_init(int quantum_usecs)
     quantumUsecs = quantum_usecs;
     __setup_thread(0, nullptr, nullptr);
     __timer_setup(quantum_usecs);
-    return 0;}
+    return 0;
+}
 
 /**
  * @brief Creates a new thread, whose entry point is the function entry_point with the signature
@@ -228,7 +225,7 @@ int uthread_init(int quantum_usecs)
  */
 int uthread_spawn(thread_entry_point entry_point)
 {
-    //TODO mask signals during spawn.
+    // TODO mask signals during spawn.
     if (readyQueue->size() == MAX_THREAD_NUM)
     {
         std::cerr << LIB_ERROR << "thread overflow\n";
@@ -259,7 +256,7 @@ int uthread_spawn(thread_entry_point entry_point)
  */
 int uthread_terminate(int tid)
 {
-    //TODO reset timer when terminating current process.
+    // TODO reset timer when terminating current process.
     if (tid == 0)
     {
         for (int i = 0; i < MAX_THREAD_NUM; i++)
@@ -290,7 +287,7 @@ int uthread_terminate(int tid)
  */
 int uthread_block(int tid)
 {
-    //TODO reset timer when blocking current process.
+    // TODO reset timer when blocking current process.
     if ((threads[tid] == nullptr) || (tid == 0))
     {
         std::cerr << LIB_ERROR << "no thread with this ID tid exists or the ID is 0\n";
@@ -305,7 +302,6 @@ int uthread_block(int tid)
         __thread_popper();
     }
     return 0;
-
 }
 
 /**
@@ -323,9 +319,11 @@ int uthread_resume(int tid)
         std::cerr << LIB_ERROR << "no thread with this ID tid exists\n";
         return -1;
     }
-    if (threads[tid]->blocked){
+    if (threads[tid]->blocked)
+    {
         threads[tid]->blocked = false;
-        if (threads[tid]->sleeptimer ==-1){
+        if (threads[tid]->sleeptimer == -1)
+        {
             readyQueue->push_back(tid);
         }
     }
@@ -346,13 +344,13 @@ int uthread_resume(int tid)
  */
 int uthread_sleep(int num_quantums)
 {
-    if (current_thread == 0){
+    if (current_thread == 0)
+    {
         return -1;
     }
-    threads[current_thread]->sleeptimer = num_quantums; 
+    threads[current_thread]->sleeptimer = num_quantums;
     __thread_popper();
     return 0;
-
 }
 
 /**
