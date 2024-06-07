@@ -224,7 +224,7 @@ void __free_thread(int tid)
     {
         delete threads[tid]->stack;
         delete threads[tid];
-        // threads[tid] = nullptr;
+        threads[tid] = nullptr;
     }
 }
 
