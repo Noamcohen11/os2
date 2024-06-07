@@ -11,6 +11,7 @@
 #include <sys/time.h>
 #include <stdbool.h>
 
+
 #ifdef __x86_64__
 /* code for 64 bit Intel arch */
 
@@ -24,9 +25,9 @@ address_t translate_address(address_t addr)
 {
     address_t ret;
     asm volatile("xor    %%fs:0x30,%0\n"
-                 "rol    $0x11,%0\n"
-                 : "=g"(ret)
-                 : "0"(addr));
+        "rol    $0x11,%0\n"
+                 : "=g" (ret)
+                 : "0" (addr));
     return ret;
 }
 
@@ -37,6 +38,7 @@ typedef unsigned int address_t;
 #define JB_SP 4
 #define JB_PC 5
 
+
 /* A translation is required when using an address of a variable.
    Use this as a black box in your code. */
 address_t translate_address(address_t addr)
@@ -44,36 +46,13 @@ address_t translate_address(address_t addr)
     address_t ret;
     asm volatile("xor    %%gs:0x18,%0\n"
                  "rol    $0x9,%0\n"
-                 : "=g"(ret)
-                 : "0"(addr));
+    : "=g" (ret)
+    : "0" (addr));
     return ret;
 }
 
+
 #endif
-
-#if defined(__x86_64__)
-/*
- * _JBLEN is number of ints required to save the following:
- * rflags, rip, rbp, rsp, rbx, r12, r13, r14, r15... these are 8 bytes each
- * mxcsr, fp control word, sigmask... these are 4 bytes each
- * add 16 ints for future expansion needs...
- */
-#define _JBLEN ((9 * 2) + 3 + 16)
-typedef int jmp_buf[_JBLEN];
-typedef int sigjmp_buf[_JBLEN + 1];
-
-#else
-
-/*
- * _JBLEN is number of ints required to save the following:
- * eax, ebx, ecx, edx, edi, esi, ebp, esp, ss, eflags, eip,
- * cs, de, es, fs, gs == 16 ints
- * onstack, mask = 2 ints
- */
-
-#define _JBLEN (18)
-typedef int jmp_buf[_JBLEN];
-typedef int sigjmp_buf[_JBLEN + 1];
 
 #define SECOND 1000000
 #define STACK_SIZE 4096
@@ -84,6 +63,7 @@ char stack0[STACK_SIZE];
 char stack1[STACK_SIZE];
 sigjmp_buf env[2];
 int current_thread = -1;
+
 
 void jump_to_thread(int tid)
 {
@@ -99,12 +79,13 @@ void yield(void)
     int ret_val = sigsetjmp(env[current_thread], 1);
     printf("yield: ret_val=%d\n", ret_val);
     bool did_just_save_bookmark = ret_val == 0;
-    //    bool did_jump_from_another_thread = ret_val != 0;
+//    bool did_jump_from_another_thread = ret_val != 0;
     if (did_just_save_bookmark)
     {
         jump_to_thread(1 - current_thread);
     }
 }
+
 
 void thread0(void)
 {
@@ -122,6 +103,7 @@ void thread0(void)
     }
 }
 
+
 void thread1(void)
 {
     int i = 0;
@@ -138,17 +120,19 @@ void thread1(void)
     }
 }
 
+
 void setup_thread(int tid, char *stack, thread_entry_point entry_point)
 {
     // initializes env[tid] to use the right stack, and to run from the function 'entry_point', when we'll use
     // siglongjmp to jump into the thread.
-    address_t sp = (address_t)stack + STACK_SIZE - sizeof(address_t);
-    address_t pc = (address_t)entry_point;
+    address_t sp = (address_t) stack + STACK_SIZE - sizeof(address_t);
+    address_t pc = (address_t) entry_point;
     sigsetjmp(env[tid], 1);
     (env[tid]->__jmpbuf)[JB_SP] = translate_address(sp);
     (env[tid]->__jmpbuf)[JB_PC] = translate_address(pc);
     sigemptyset(&env[tid]->__saved_mask);
 }
+
 
 void setup(void)
 {
@@ -156,6 +140,7 @@ void setup(void)
     setup_thread(0, stack0, thread0);
     setup_thread(1, stack1, thread1);
 }
+
 
 int main(void)
 {

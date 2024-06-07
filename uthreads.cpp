@@ -55,22 +55,135 @@ typedef unsigned int address_t;
 #endif
 
 #define LIB_ERROR "thread library error: "
+#define SYS_ERROR "system error: "
 #define SECOND 1000000
 #define MAX_THREAD_NUM 100 /* maximal number of threads */
 #define STACK_SIZE 4096    /* stack size per thread (in bytes) */
 
 /* External interface */
-std::deque<int> readyQueue;
-int current_thread = -1;
+std::deque<int> *readyQueue;
+int current_thread = 0;
 int quantumUsecs;
+int realtime = 0;
 typedef void (*thread_entry_point)(void);
 
 struct Thread
 {
     sigjmp_buf env;
     char *stack;
+    int virtualtime;
+    bool blocked;
+    int sleeptimer;
 };
 Thread *threads[MAX_THREAD_NUM];
+
+
+
+void __yield(int tid)
+{
+    int ret_val = sigsetjmp(threads[current_thread]->env, 1);
+    bool did_just_save_bookmark = ret_val == 0;
+    if (did_just_save_bookmark)
+    {
+        current_thread = tid;
+        realtime++;
+        threads[tid]->virtualtime++;
+        siglongjmp(threads[tid]->env, 1);
+    }
+
+}
+
+void __setup_thread(int tid, char *stack, thread_entry_point entry_point)
+{
+    threads[tid] = new Thread;
+    // initializes env[tid] to use the right stack, and to run from the function 'entry_point', when we'll use
+    // siglongjmp to jump into the thread.
+    address_t sp = (address_t)stack + STACK_SIZE - sizeof(address_t);
+    address_t pc = (address_t)entry_point;
+    threads[tid]->virtualtime = 0;
+    threads[tid]->sleeptimer = -1;
+    threads[tid]->blocked = false;
+
+    sigsetjmp(threads[tid]->env, 1);
+    threads[tid]->env->__jmpbuf[JB_SP] = translate_address(sp);
+    threads[tid]->env->__jmpbuf[JB_PC] = translate_address(pc);
+    sigemptyset(&threads[tid]->env->__saved_mask);
+}
+
+int __find_available_tid(void)
+{
+    for (int i = 0; i < MAX_THREAD_NUM; i++)
+    {
+        if (threads[i] == nullptr)
+        {
+            return i;
+        }
+    }
+    return -1;
+}
+
+void __thread_popper()
+{
+    int tid = readyQueue->front();
+    readyQueue->pop_front();
+    __yield(tid);
+}
+void __time_handler(int sig)
+{
+    readyQueue->push_back(current_thread);
+    __thread_popper();
+}
+
+
+void __free_thread(int tid)
+{
+    if (threads[tid] != nullptr)
+    {
+        delete threads[tid]->stack;
+        delete threads[tid];
+    }
+}
+
+void __remove_from_deque(int tid)
+{
+    auto it = std::find(readyQueue->begin(), readyQueue->end(), tid);
+
+    // Check if the element was found
+
+    if (it != readyQueue->end())
+    {
+        readyQueue->erase(it);
+    }
+}
+
+void __timer_setup(int quantum_usecs)
+{
+    // TODO: Check context switch in the middle of the function.
+    // TODO: stop timer between actions.
+    struct sigaction sa = {0};
+    struct itimerval timer;
+
+    // Install __time_handler as the signal handler for SIGVTALRM.
+    sa.sa_handler = &__time_handler;
+    if (sigaction(SIGVTALRM, &sa, NULL) < 0)
+    {
+        std::cerr << SYS_ERROR << "sigaction error.\n";
+    }
+
+    // Configure the timer to expire after quantum_usecs sec... */
+    timer.it_value.tv_sec = 0;              // first time interval, seconds part
+    timer.it_value.tv_usec = quantum_usecs; // first time interval, microseconds part
+
+    // configure the timer to expire every quantum_usecs sec after that.
+    timer.it_interval.tv_sec = 0;              // following time intervals, seconds part
+    timer.it_interval.tv_usec = quantum_usecs; // following time intervals, microseconds part
+
+    if (setitimer(ITIMER_VIRTUAL, &timer, NULL))
+    {
+        std::cerr << SYS_ERROR << "set timer failed.\n";
+    }
+}
+
 
 // TODO: understand how to malloc in cpp.
 
@@ -90,16 +203,16 @@ Thread *threads[MAX_THREAD_NUM];
  */
 int uthread_init(int quantum_usecs)
 {
+    readyQueue = new std::deque<int>;
     if (quantum_usecs <= 0)
     {
         std::cerr << LIB_ERROR << "invalid quantum_usecs\n";
         return -1;
     }
     quantumUsecs = quantum_usecs;
-    __setup_thread(0, NULL, NULL);
-    __jump_to_thread(0);
-    return 0;
-}
+    __setup_thread(0, nullptr, nullptr);
+    __timer_setup(quantum_usecs);
+    return 0;}
 
 /**
  * @brief Creates a new thread, whose entry point is the function entry_point with the signature
@@ -115,7 +228,8 @@ int uthread_init(int quantum_usecs)
  */
 int uthread_spawn(thread_entry_point entry_point)
 {
-    if (readyQueue.size() == MAX_THREAD_NUM)
+    //TODO mask signals during spawn.
+    if (readyQueue->size() == MAX_THREAD_NUM)
     {
         std::cerr << LIB_ERROR << "thread overflow\n";
         return -1;
@@ -129,6 +243,7 @@ int uthread_spawn(thread_entry_point entry_point)
     char *stack = new char[STACK_SIZE];
     int tid = __find_available_tid();
     __setup_thread(tid, stack, entry_point);
+    readyQueue->push_back(tid);
     return tid;
 }
 
@@ -144,6 +259,7 @@ int uthread_spawn(thread_entry_point entry_point)
  */
 int uthread_terminate(int tid)
 {
+    //TODO reset timer when terminating current process.
     if (tid == 0)
     {
         for (int i = 0; i < MAX_THREAD_NUM; i++)
@@ -156,10 +272,10 @@ int uthread_terminate(int tid)
     __free_thread(tid);
     // TODO Not dealing with blocked yet.
     // + We don't know how to deal with running termination.
-    // if (tid == current_thread)
-    // {
-
-    // }
+    if (tid == current_thread)
+    {
+        __thread_popper();
+    }
     return 0;
 }
 
@@ -174,11 +290,22 @@ int uthread_terminate(int tid)
  */
 int uthread_block(int tid)
 {
+    //TODO reset timer when blocking current process.
     if ((threads[tid] == nullptr) || (tid == 0))
     {
-        std::cerr << LIB_ERROR << "no thread with this ID tid exists\n";
+        std::cerr << LIB_ERROR << "no thread with this ID tid exists or the ID is 0\n";
         return -1;
     }
+    return 0;
+
+    threads[tid]->blocked = true;
+    __remove_from_deque(tid);
+    if (tid == current_thread)
+    {
+        __thread_popper();
+    }
+    return 0;
+
 }
 
 /**
@@ -189,8 +316,21 @@ int uthread_block(int tid)
  *
  * @return On success, return 0. On failure, return -1.
  */
-int uthread_resume(int tid);
-
+int uthread_resume(int tid)
+{
+    if (threads[tid] == nullptr)
+    {
+        std::cerr << LIB_ERROR << "no thread with this ID tid exists\n";
+        return -1;
+    }
+    if (threads[tid]->blocked){
+        threads[tid]->blocked = false;
+        if (threads[tid]->sleeptimer ==-1){
+            readyQueue->push_back(tid);
+        }
+    }
+    return 0;
+}
 /**
  * @brief Blocks the RUNNING thread for num_quantums quantums.
  *
@@ -199,89 +339,59 @@ int uthread_resume(int tid);
  * If the thread which was just RUNNING should also be added to the READY queue, or if multiple threads wake up
  * at the same time, the order in which they're added to the end of the READY queue doesn't matter.
  * The number of quantums refers to the number of times a new quantum starts, regardless of the reason. Specifically,
- * the quantum of the thread which has made
+ * the quantum of the thread which has made the call to uthread_sleep isn’t counted.
+ * It is considered an error if the main thread (tid == 0) calls this function.
+ *
+ * @return On success, return 0. On failure, return -1.
  */
-
-void __jump_to_thread(int tid)
+int uthread_sleep(int num_quantums)
 {
-    current_thread = tid;
-    siglongjmp(threads[tid]->env, 1);
-}
-
-void __setup_thread(int tid, char *stack, thread_entry_point entry_point)
-{
-    threads[tid] = new Thread;
-    // initializes env[tid] to use the right stack, and to run from the function 'entry_point', when we'll use
-    // siglongjmp to jump into the thread.
-    address_t sp = (address_t)stack + STACK_SIZE - sizeof(address_t);
-    address_t pc = (address_t)entry_point;
-
-    if (sigsetjmp(threads[tid]->env, 1) == 0)
-    {
-        threads[tid]->env->__jmpbuf[JB_SP] = translate_address(sp);
-        threads[tid]->env->__jmpbuf[JB_PC] = translate_address(pc);
+    if (current_thread == 0){
+        return -1;
     }
-    sigemptyset(&threads[tid]->env->__saved_mask);
+    threads[current_thread]->sleeptimer = num_quantums; 
+    __thread_popper();
+    return 0;
+
 }
 
-int __find_available_tid(void)
+/**
+ * @brief Returns the thread ID of the calling thread.
+ *
+ * @return The ID of the calling thread.
+ */
+int uthread_get_tid()
 {
-    for (int i = 0; i < MAX_THREAD_NUM; i++)
+    return current_thread;
+}
+
+/**
+ * @brief Returns the total number of quantums since the library was initialized, including the current quantum.
+ *
+ * Right after the call to uthread_init, the value should be 1.
+ * Each time a new quantum starts, regardless of the reason, this number should be increased by 1.
+ *
+ * @return The total number of quantums.
+ */
+int uthread_get_total_quantums()
+{
+    return realtime;
+}
+
+/**
+ * @brief Returns the number of quantums the thread with ID tid was in RUNNING state.
+ *
+ * On the first time a thread runs, the function should return 1. Every additional quantum that the thread starts should
+ * increase this value by 1 (so if the thread with ID tid is in RUNNING state when this function is called, include
+ * also the current quantum). If no thread with ID tid exists it is considered an error.
+ *
+ * @return On success, return the number of quantums of the thread with ID tid. On failure, return -1.
+ */
+int uthread_get_quantums(int tid)
+{
+    if (threads[tid] == nullptr)
     {
-        if (threads[i] == nullptr)
-        {
-            return i;
-        }
+        return -1;
     }
-}
-
-void __free_thread(int tid)
-{
-    if (threads[tid] != nullptr)
-    {
-        delete threads[tid]->stack;
-        delete threads[tid];
-    }
-}
-
-void __remove_from_deque(int tid)
-{
-    auto it = std::find(readyQueue.begin(), readyQueue.end(), tid);
-
-    // Check if the element was found
-    if (it != readyQueue.end())
-    {
-        // Erase the element
-        readyQueue.erase(it);
-    }
-}
-
-void timer_handler(int sig)
-{
-    int tid = readyQueue.front();
-    readyQueue.pop_front();
-    readyQueue.push_back(current_thread);
-    current_thread = tid;
-    __jump_to_thread(tid);
-}
-
-void __timer_setup(int quantum_usecs)
-{
-    struct sigaction sa = {0};
-    struct itimerval timer;
-
-    // Install timer_handler as the signal handler for SIGVTALRM.
-    sa.sa_handler = &timer_handler;
-    if (sigaction(SIGVTALRM, &sa, NULL) < 0)
-    {
-        printf("sigaction error.");
-    }
-
-    // Configure the timer to expire after 1 sec... */
-    timer.it_value.tv_sec = 0;              // first time interval, seconds part
-    timer.it_value.tv_usec = quantum_usecs; // first time interval, microseconds part
-
-    // configure the timer to expire every 3 sec after that.
-    timer.it_interval.tv_sec = 0;              // following time intervals, seconds part
-    timer.it_interval.tv_usec = quantum_usecs; // following time intervals, microseconds part
+    return threads[tid]->virtualtime;
 }
