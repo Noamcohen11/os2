@@ -189,6 +189,7 @@ void __thread_popper()
 void __terminate_jump()
 {
     int tid = readyQueue->front();
+    std::cout << "tid" << tid << std::endl;
     readyQueue->pop_front();
     current_thread = tid;
     __advance_time();
@@ -234,7 +235,7 @@ void __free_thread(int tid)
  *
  * @param tid The thread ID to remove.
  */
-void __remove_from_deque(int tid)
+void __remove_from_database(int tid)
 {
     auto it = std::find(readyQueue->begin(), readyQueue->end(), tid);
 
@@ -244,8 +245,15 @@ void __remove_from_deque(int tid)
     {
         readyQueue->erase(it);
     }
-}
 
+    for (int i = 0; i < sleepingVector->size(); ++i)
+    {
+        if (sleepingVector->at(i) == tid)
+        {
+            sleepingVector->erase(sleepingVector->begin() + i);
+        }
+    }
+}
 /**
  * @brief Sets up the virtual timer for thread scheduling.
  *
@@ -367,13 +375,13 @@ int uthread_terminate(int tid)
         }
         exit(0);
     }
-    __remove_from_deque(tid);
+    __remove_from_database(tid);
     __free_thread(tid);
     // TODO Not dealing with blocked yet.
     // + We don't know how to deal with running termination.
     if (tid == current_thread)
     {
-        __thread_popper();
+        __terminate_jump();
     }
     return 0;
 }
@@ -397,7 +405,7 @@ int uthread_block(int tid)
     }
 
     threads[tid]->blocked = true;
-    __remove_from_deque(tid);
+    __remove_from_database(tid);
     if (tid == current_thread)
     {
         __thread_popper();
