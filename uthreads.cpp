@@ -7,6 +7,7 @@
 #include <sys/time.h>
 #include <cassert>
 #include <signal.h>
+#include <vector>
 
 #if defined(__x86_64__)
 /* code for 64 bit Intel arch */
