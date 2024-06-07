@@ -192,7 +192,8 @@ void __terminate_jump()
     std::cout << "tid" << tid << std::endl;
     readyQueue->pop_front();
     current_thread = tid;
-    __advance_time();
+    // __advance_time();
+    realtime++;
     siglongjmp(threads[tid]->env, 1);
 }
 
