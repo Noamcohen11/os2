@@ -62,6 +62,7 @@ typedef unsigned int address_t;
 
 /* External interface */
 std::deque<int> *readyQueue;
+std::vector<int> *sleepingVector;
 int current_thread = 0;
 int quantumUsecs;
 int realtime = 0;
@@ -75,8 +76,37 @@ struct Thread
     bool blocked;
     int sleeptimer;
 };
+
 Thread *threads[MAX_THREAD_NUM];
 
+void __advance_time()
+{
+    realtime++;
+    for (int i = 0; i < sleepingVector->size(); ++i)
+    {
+        int tid = sleepingVector->at(i);
+        threads[tid]->sleeptimer--;
+        if (threads[tid]->sleeptimer == 0)
+        {
+            threads[tid]->sleeptimer = -1;
+            if (threads[tid]->blocked == false)
+            {
+                readyQueue->push_back(tid);
+            }
+            sleepingVector->erase(sleepingVector->begin() + i);
+            i--;
+        }
+    }
+}
+/**
+ * @brief Saves the current thread's context and switches to another thread.
+ *
+ * This function saves the context of the current thread, switches to the specified
+ * thread, and resumes its execution. If the context save is successful, the thread
+ * switch occurs; otherwise, it returns from the function call.
+ *
+ * @param tid The thread ID to switch to.
+ */
 void __yield(int tid)
 {
     int ret_val = sigsetjmp(threads[current_thread]->env, 1);
@@ -90,6 +120,16 @@ void __yield(int tid)
     }
 }
 
+/**
+ * @brief Sets up a thread with the given stack and entry point.
+ *
+ * This function initializes a thread's environment, including its stack and entry
+ * point function. It prepares the thread to be scheduled and run.
+ *
+ * @param tid The thread ID to set up.
+ * @param stack The stack allocated for the thread.
+ * @param entry_point The function to run when the thread starts.
+ */
 void __setup_thread(int tid, char *stack, thread_entry_point entry_point)
 {
     threads[tid] = new Thread;
@@ -107,6 +147,13 @@ void __setup_thread(int tid, char *stack, thread_entry_point entry_point)
     sigemptyset(&threads[tid]->env->__saved_mask);
 }
 
+/**
+ * @brief Finds an available thread ID.
+ *
+ * This function searches for an available thread ID that is not currently in use.
+ *
+ * @return The available thread ID, or -1 if no available ID is found.
+ */
 int __find_available_tid(void)
 {
     for (int i = 0; i < MAX_THREAD_NUM; i++)
@@ -119,12 +166,25 @@ int __find_available_tid(void)
     return -1;
 }
 
+/**
+ * @brief Pops the next thread from the ready queue and switches to it.
+ *
+ * This function removes the front thread from the ready queue and switches to it,
+ * effectively yielding execution to the next thread.
+ */
 void __thread_popper()
 {
     int tid = readyQueue->front();
     readyQueue->pop_front();
     __yield(tid);
 }
+
+/**
+ * @brief Switches to the next thread after terminating the current one.
+ *
+ * This function is used to handle the termination of a thread. It switches execution
+ * to the next thread in the ready queue.
+ */
 void __terminate_jump()
 {
     int tid = readyQueue->front();
@@ -134,12 +194,28 @@ void __terminate_jump()
     siglongjmp(threads[tid]->env, 1);
 }
 
+/**
+ * @brief Signal handler for the virtual timer.
+ *
+ * This function handles the virtual timer signal (SIGVTALRM). It adds the current
+ * thread to the ready queue and switches to the next thread.
+ *
+ * @param sig The signal number (should be SIGVTALRM).
+ */
 void __time_handler(int sig)
 {
     readyQueue->push_back(current_thread);
     __thread_popper();
 }
 
+/**
+ * @brief Frees the resources allocated for a thread.
+ *
+ * This function releases the resources (stack and thread structure) allocated for
+ * the specified thread.
+ *
+ * @param tid The thread ID to free.
+ */
 void __free_thread(int tid)
 {
     if (threads[tid] != nullptr)
@@ -150,6 +226,13 @@ void __free_thread(int tid)
     }
 }
 
+/**
+ * @brief Removes a thread from the ready queue.
+ *
+ * This function finds and removes the specified thread from the ready queue.
+ *
+ * @param tid The thread ID to remove.
+ */
 void __remove_from_deque(int tid)
 {
     auto it = std::find(readyQueue->begin(), readyQueue->end(), tid);
@@ -162,6 +245,14 @@ void __remove_from_deque(int tid)
     }
 }
 
+/**
+ * @brief Sets up the virtual timer for thread scheduling.
+ *
+ * This function configures and starts a virtual timer to manage the scheduling of
+ * threads based on the specified quantum time.
+ *
+ * @param quantum_usecs The length of a quantum in microseconds.
+ */
 void __timer_setup(int quantum_usecs)
 {
     // TODO: Check context switch in the middle of the function.
@@ -209,6 +300,7 @@ void __timer_setup(int quantum_usecs)
 int uthread_init(int quantum_usecs)
 {
     readyQueue = new std::deque<int>;
+    sleepingVector = new std::vector<int>;
     if (quantum_usecs <= 0)
     {
         std::cerr << LIB_ERROR << "invalid quantum_usecs\n";
@@ -357,6 +449,7 @@ int uthread_sleep(int num_quantums)
         return -1;
     }
     threads[current_thread]->sleeptimer = num_quantums;
+    sleepingVector->push_back(current_thread);
     __thread_popper();
     return 0;
 }
