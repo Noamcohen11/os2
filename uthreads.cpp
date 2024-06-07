@@ -192,8 +192,7 @@ void __terminate_jump()
     std::cout << "tid" << tid << std::endl;
     readyQueue->pop_front();
     current_thread = tid;
-    // __advance_time();
-    realtime++;
+    __advance_time();
     siglongjmp(threads[tid]->env, 1);
 }
 
@@ -225,7 +224,7 @@ void __free_thread(int tid)
     {
         delete threads[tid]->stack;
         delete threads[tid];
-        threads[tid] = nullptr;
+        // threads[tid] = nullptr;
     }
 }
 
