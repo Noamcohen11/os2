@@ -14,7 +14,7 @@
 using namespace std;
 
 int MAIN_THREAD = 0;
-int QUANTOM = 100000;
+int QUANTOM = 1000000;
 
 void send_sigalarm()
 {
@@ -113,8 +113,8 @@ void test_block()
     uthread_block(1);
     send_sigalarm();
     assert(uthread_get_tid() == 0);
-    uthread_terminate(1);
     printf("Passed Block Test!\n");
+    uthread_terminate(1);
 }
 
 void resume_entry_point()
