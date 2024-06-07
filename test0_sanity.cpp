@@ -2,15 +2,15 @@
 
 #include <iostream>
 
-void f (void)
+void f(void)
 {
 	int tid = uthread_get_tid();
 	int i = 1;
-	while(1)
+	while (1)
 	{
-		if(i == uthread_get_quantums(tid))
+		if (i == uthread_get_quantums(tid))
 		{
-			std::cout << "f" << tid << " Quanta:" <<  i << std::endl;
+			std::cout << "f" << tid << " Quanta:" << i << std::endl;
 			if (i == 5)
 			{
 				std::cout << "f END" << std::endl;
@@ -18,19 +18,18 @@ void f (void)
 			}
 			i++;
 		}
-
 	}
 }
 
-void g (void)
+void g(void)
 {
 	int tid = uthread_get_tid();
 	int i = 1;
-	while(1)
+	while (1)
 	{
-		if(i == uthread_get_quantums(tid))
+		if (i == uthread_get_quantums(tid))
 		{
-			std::cout << "g" << tid << " Quanta:" <<  i << std::endl;
+			std::cout << "g" << tid << " Quanta:" << i << std::endl;
 			if (i == 5)
 			{
 				std::cout << "g END" << std::endl;
@@ -38,10 +37,8 @@ void g (void)
 			}
 			i++;
 		}
-
 	}
 }
-
 
 int main(void)
 {
@@ -54,11 +51,11 @@ int main(void)
 		int i = 1;
 		std::cout << "Thread:m Number:(0) " << tid << std::endl;
 		std::cout << "Init Quantum num is: " << uthread_get_total_quantums() << std::endl;
-		while(1)
+		while (1)
 		{
-			if(i == uthread_get_quantums(tid))
+			if (i == uthread_get_quantums(tid))
 			{
-				std::cout << "m" << tid << " Quanta:" <<  i << std::endl;
+				std::cout << "m" << tid << " Quanta:" << i << std::endl;
 				if (i == 3)
 				{
 					std::cout << "m spawns f at (1) " << uthread_spawn(f) << std::endl;
@@ -73,9 +70,9 @@ int main(void)
 			}
 		}
 	}
-	catch(const std::exception& e)
+	catch (const std::exception &e)
 	{
-		std::cout << "Caught The Following Excpetion: \n" << e.what() << std::endl;
+		std::cout << "Caught The Following Excpetion: \n"
+				  << e.what() << std::endl;
 	}
-
 }

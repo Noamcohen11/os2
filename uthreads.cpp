@@ -126,6 +126,15 @@ void __thread_popper()
     readyQueue->pop_front();
     __yield(tid);
 }
+void __terminate_jump()
+{
+    int tid = readyQueue->front();
+    readyQueue->pop_front();
+    current_thread = tid;
+    realtime++;
+    siglongjmp(threads[tid]->env, 1);
+}
+
 void __time_handler(int sig)
 {
     readyQueue->push_back(current_thread);
@@ -138,6 +147,7 @@ void __free_thread(int tid)
     {
         delete threads[tid]->stack;
         delete threads[tid];
+        threads[tid] = nullptr;
     }
 }
 
@@ -271,7 +281,7 @@ int uthread_terminate(int tid)
     // + We don't know how to deal with running termination.
     if (tid == current_thread)
     {
-        __thread_popper();
+        __terminate_jump();
     }
     return 0;
 }
