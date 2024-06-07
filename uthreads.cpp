@@ -373,7 +373,7 @@ int uthread_terminate(int tid)
     // + We don't know how to deal with running termination.
     if (tid == current_thread)
     {
-        __terminate_jump();
+        __thread_popper();
     }
     return 0;
 }
