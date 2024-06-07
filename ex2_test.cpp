@@ -14,7 +14,7 @@
 using namespace std;
 
 int MAIN_THREAD = 0;
-int QUANTOM = 100000;
+int QUANTOM = 1000000;
 
 void send_sigalarm()
 {
@@ -141,6 +141,7 @@ void sleep_entrypoint()
     uthread_sleep(2);
     assert(uthread_get_quantums(1) == 2);
     uthread_terminate(1);
+    printf("Passed Basic Sleep Test!\n");
 }
 
 void test_sleep()
@@ -151,7 +152,6 @@ void test_sleep()
     send_sigalarm();                          // wait for sleeping time to pass
     send_sigalarm();                          // jump back to thread 1 -> it will terminate itself
     assert(uthread_get_tid() == 0);
-    printf("Passed Basic Sleep Test!\n");
 }
 
 void test_block_sleeping_thread()
