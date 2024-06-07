@@ -305,7 +305,6 @@ int uthread_block(int tid)
 
     threads[tid]->blocked = true;
     __remove_from_deque(tid);
-    std::cout << "front" << readyQueue->front() << tid << std::endl;
     if (tid == current_thread)
     {
         __thread_popper();
