@@ -83,7 +83,6 @@ void __yield(int tid)
     bool did_just_save_bookmark = ret_val == 0;
     if (did_just_save_bookmark)
     {
-        std::cout << "tid " << tid << std::endl;
         current_thread = tid;
         realtime++;
         threads[tid]->virtualtime++;
@@ -303,10 +302,10 @@ int uthread_block(int tid)
         std::cerr << LIB_ERROR << "no thread with this ID tid exists or the ID is 0\n";
         return -1;
     }
-    return 0;
 
     threads[tid]->blocked = true;
     __remove_from_deque(tid);
+    std::cout << "front" << readyQueue->front() << tid << std::endl;
     if (tid == current_thread)
     {
         __thread_popper();
