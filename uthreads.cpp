@@ -115,7 +115,7 @@ void __yield(int tid)
     if (did_just_save_bookmark)
     {
         current_thread = tid;
-        realtime++;
+        __advance_time();
         threads[tid]->virtualtime++;
         siglongjmp(threads[tid]->env, 1);
     }
@@ -191,7 +191,7 @@ void __terminate_jump()
     int tid = readyQueue->front();
     readyQueue->pop_front();
     current_thread = tid;
-    realtime++;
+    __advance_time();
     siglongjmp(threads[tid]->env, 1);
 }
 
