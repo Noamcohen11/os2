@@ -129,7 +129,6 @@ void __advance_time()
 void __yield(int tid, bool reset_timer = false)
 {
     int ret_val = sigsetjmp(threads[current_thread]->env, 1);
-    std::cout << "g" << std::endl;
     bool did_just_save_bookmark = ret_val == 0;
     if (did_just_save_bookmark)
     {
@@ -405,8 +404,8 @@ int uthread_terminate(int tid)
     __free_thread(tid);
     if (tid == current_thread)
     {
-        siglongjmp(threads[2]->env, 1);
-        // __terminate_jump();
+        // siglongjmp(threads[2]->env, 1);
+        __terminate_jump();
     }
     return 0;
 }
