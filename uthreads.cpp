@@ -220,7 +220,7 @@ void __terminate_jump()
     std::cout << "debug tid " << tid << std::endl;
     std::cout << "debug queue " << readyQueue->front() << " size: " << readyQueue->size() << std::endl;
     std::cout << "debug threads " << threads[tid] << std::endl;
-    siglongjmp(threads[2]->env, 1);
+    siglongjmp(threads[tid]->env, 1);
 }
 
 /**
@@ -403,12 +403,12 @@ int uthread_terminate(int tid)
         }
         exit(0);
     }
-    __remove_from_database(tid);
-    __free_thread(tid);
     if (tid == current_thread)
     {
         __terminate_jump();
     }
+    __remove_from_database(tid);
+    __free_thread(tid);
     return 0;
 }
 
