@@ -96,6 +96,8 @@ void unblock_sig(int sig)
     sigprocmask(SIG_UNBLOCK, &set, NULL);
 }
 
+void __timer_setup(int quantum_usecs);
+
 void __advance_time()
 {
     realtime++;
