@@ -218,6 +218,7 @@ void __terminate_jump()
     current_thread = tid;
     __advance_time();
     __timer_setup(quantumUsecs);
+    threads[tid]->virtualtime++;
     siglongjmp(threads[tid]->env, 1);
 }
 
