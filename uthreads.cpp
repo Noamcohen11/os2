@@ -80,6 +80,22 @@ struct Thread
 
 Thread *threads[MAX_THREAD_NUM];
 
+void block_sig(int sig)
+{
+    sigset_t set;
+    sigemptyset(&set);
+    sigaddset(&set, sig);
+    sigprocmask(SIG_BLOCK, &set, NULL);
+}
+
+void unblock_sig(int sig)
+{
+    sigset_t set;
+    sigemptyset(&set);
+    sigaddset(&set, sig);
+    sigprocmask(SIG_UNBLOCK, &set, NULL);
+}
+
 void __advance_time()
 {
     realtime++;
@@ -119,6 +135,7 @@ void __yield(int tid)
         threads[tid]->virtualtime++;
         siglongjmp(threads[tid]->env, 1);
     }
+    unblock_sig(SIGVTALRM);
 }
 
 /**
@@ -335,22 +352,26 @@ int uthread_init(int quantum_usecs)
  */
 int uthread_spawn(thread_entry_point entry_point)
 {
+    block_sig(SIGVTALRM);
     // TODO mask signals during spawn.
     if (readyQueue->size() == MAX_THREAD_NUM)
     {
         std::cerr << LIB_ERROR << "thread overflow\n";
+        unblock_sig(SIGVTALRM);
         return -1;
     }
     // TODO maybe nullpointer.
     if (entry_point == NULL)
     {
         std::cerr << LIB_ERROR << "null entry point\n";
+        unblock_sig(SIGVTALRM);
         return -1;
     }
     char *stack = new char[STACK_SIZE];
     int tid = __find_available_tid();
     __setup_thread(tid, stack, entry_point);
     readyQueue->push_back(tid);
+    unblock_sig(SIGVTALRM);
     return tid;
 }
 
@@ -366,6 +387,7 @@ int uthread_spawn(thread_entry_point entry_point)
  */
 int uthread_terminate(int tid)
 {
+    block_sig(SIGVTALRM);
     // TODO reset timer when terminating current process.
     if (tid == 0)
     {
@@ -397,10 +419,12 @@ int uthread_terminate(int tid)
  */
 int uthread_block(int tid)
 {
+    block_sig(SIGVTALRM);
     // TODO reset timer when blocking current process.
     if ((threads[tid] == nullptr) || (tid == 0))
     {
         std::cerr << LIB_ERROR << "no thread with this ID tid exists or the ID is 0\n";
+        unblock_sig(SIGVTALRM);
         return -1;
     }
 
@@ -409,6 +433,10 @@ int uthread_block(int tid)
     if (tid == current_thread)
     {
         __thread_popper();
+    }
+    else
+    {
+        unblock_sig(SIGVTALRM);
     }
     return 0;
 }
@@ -423,9 +451,11 @@ int uthread_block(int tid)
  */
 int uthread_resume(int tid)
 {
+    block_sig(SIGVTALRM);
     if (threads[tid] == nullptr)
     {
         std::cerr << LIB_ERROR << "no thread with this ID tid exists\n";
+        unblock_sig(SIGVTALRM);
         return -1;
     }
     if (threads[tid]->blocked)
@@ -436,6 +466,7 @@ int uthread_resume(int tid)
             readyQueue->push_back(tid);
         }
     }
+    unblock_sig(SIGVTALRM);
     return 0;
 }
 /**
@@ -453,8 +484,10 @@ int uthread_resume(int tid)
  */
 int uthread_sleep(int num_quantums)
 {
+    block_sig(SIGVTALRM);
     if (current_thread == 0)
     {
+        unblock_sig(SIGVTALRM);
         return -1;
     }
     threads[current_thread]->sleeptimer = num_quantums;
@@ -497,9 +530,12 @@ int uthread_get_total_quantums()
  */
 int uthread_get_quantums(int tid)
 {
+    block_sig(SIGVTALRM);
     if (threads[tid] == nullptr)
     {
+        unblock_sig(SIGVTALRM);
         return -1;
     }
+    unblock_sig(SIGVTALRM);
     return threads[tid]->virtualtime;
 }
