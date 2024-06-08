@@ -124,7 +124,7 @@ void __advance_time()
  *
  * @param tid The thread ID to switch to.
  */
-void __yield(int tid)
+void __yield(int tid, bool reset_timer = false)
 {
     int ret_val = sigsetjmp(threads[current_thread]->env, 1);
     bool did_just_save_bookmark = ret_val == 0;
@@ -133,6 +133,11 @@ void __yield(int tid)
         current_thread = tid;
         __advance_time();
         threads[tid]->virtualtime++;
+        if (reset_timer)
+        {
+            __timer_setup(quantumUsecs);
+        }
+
         siglongjmp(threads[tid]->env, 1);
     }
     unblock_sig(SIGVTALRM);
@@ -190,11 +195,11 @@ int __find_available_tid(void)
  * This function removes the front thread from the ready queue and switches to it,
  * effectively yielding execution to the next thread.
  */
-void __thread_popper()
+void __thread_popper(bool reset_timer = false)
 {
     int tid = readyQueue->front();
     readyQueue->pop_front();
-    __yield(tid);
+    __yield(tid, reset_timer);
 }
 
 /**
@@ -206,10 +211,10 @@ void __thread_popper()
 void __terminate_jump()
 {
     int tid = readyQueue->front();
-    std::cout << "tid" << tid << std::endl;
     readyQueue->pop_front();
     current_thread = tid;
     __advance_time();
+    __timer_setup(quantumUsecs);
     siglongjmp(threads[tid]->env, 1);
 }
 
@@ -432,7 +437,7 @@ int uthread_block(int tid)
     __remove_from_database(tid);
     if (tid == current_thread)
     {
-        __thread_popper();
+        __thread_popper(true);
     }
     else
     {
@@ -492,7 +497,7 @@ int uthread_sleep(int num_quantums)
     }
     threads[current_thread]->sleeptimer = num_quantums;
     sleepingVector->push_back(current_thread);
-    __thread_popper();
+    __thread_popper(true);
     return 0;
 }
 
