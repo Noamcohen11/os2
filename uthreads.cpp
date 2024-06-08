@@ -403,12 +403,12 @@ int uthread_terminate(int tid)
         }
         exit(0);
     }
-    if (tid == current_thread)
-    {
-        siglongjmp(threads[2]->env, 1);
-    }
     __remove_from_database(tid);
     __free_thread(tid);
+    if (tid == current_thread)
+    {
+        siglongjmp(threads[tid]->env, 1);
+    }
     return 0;
 }
 
