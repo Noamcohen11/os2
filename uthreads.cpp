@@ -217,6 +217,8 @@ void __terminate_jump()
     current_thread = tid;
     __advance_time();
     __timer_setup(quantumUsecs);
+    std::cout << "debug tid " << tid << std::endl;
+    std::cout << "debug queue " << readyQueue->front() << " size: " << readyQueue->size() << std::endl;
     siglongjmp(threads[tid]->env, 1);
 }
 
@@ -288,8 +290,6 @@ void __remove_from_database(int tid)
  */
 void __timer_setup(int quantum_usecs)
 {
-    // TODO: Check context switch in the middle of the function.
-    // TODO: stop timer between actions.
     struct sigaction sa = {0};
     struct itimerval timer;
 
@@ -360,7 +360,6 @@ int uthread_init(int quantum_usecs)
 int uthread_spawn(thread_entry_point entry_point)
 {
     block_sig(SIGVTALRM);
-    // TODO mask signals during spawn.
     if (readyQueue->size() == MAX_THREAD_NUM)
     {
         std::cerr << LIB_ERROR << "thread overflow\n";
@@ -395,7 +394,6 @@ int uthread_spawn(thread_entry_point entry_point)
 int uthread_terminate(int tid)
 {
     block_sig(SIGVTALRM);
-    // TODO reset timer when terminating current process.
     if (tid == 0)
     {
         for (int i = 0; i < MAX_THREAD_NUM; i++)
@@ -406,8 +404,6 @@ int uthread_terminate(int tid)
     }
     __remove_from_database(tid);
     __free_thread(tid);
-    // TODO Not dealing with blocked yet.
-    // + We don't know how to deal with running termination.
     if (tid == current_thread)
     {
         __terminate_jump();
@@ -427,7 +423,6 @@ int uthread_terminate(int tid)
 int uthread_block(int tid)
 {
     block_sig(SIGVTALRM);
-    // TODO reset timer when blocking current process.
     if ((threads[tid] == nullptr) || (tid == 0))
     {
         std::cerr << LIB_ERROR << "no thread with this ID tid exists or the ID is 0\n";
