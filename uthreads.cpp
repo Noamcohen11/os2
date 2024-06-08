@@ -215,8 +215,8 @@ void __terminate_jump()
     int tid = readyQueue->front();
     readyQueue->pop_front();
     current_thread = tid;
-    __advance_time();
-    __timer_setup(quantumUsecs);
+    // __advance_time();
+    // __timer_setup(quantumUsecs);
     siglongjmp(threads[tid]->env, 1);
 }
 
