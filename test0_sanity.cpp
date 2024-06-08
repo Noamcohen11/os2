@@ -44,9 +44,7 @@ int main(void)
 {
 	try
 	{
-		std::cout << "spawning " << std::endl;
 		uthread_init(1000);
-		std::cout << "init done" << std::endl;
 		int tid = uthread_get_tid();
 		int i = 1;
 		std::cout << "Thread:m Number:(0) " << tid << std::endl;
