@@ -101,7 +101,7 @@ void __timer_setup(int quantum_usecs);
 void __advance_time()
 {
     realtime++;
-    for (int i = 0; i < sleepingVector->size(); ++i)
+    for (int i = 0; i < (int)sleepingVector->size(); ++i)
     {
         int tid = sleepingVector->at(i);
         threads[tid]->sleeptimer--;
@@ -270,7 +270,7 @@ void __remove_from_database(int tid)
         readyQueue->erase(it);
     }
 
-    for (int i = 0; i < sleepingVector->size(); ++i)
+    for (int i = 0; i < (int)sleepingVector->size(); ++i)
     {
         if (sleepingVector->at(i) == tid)
         {
