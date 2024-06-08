@@ -219,6 +219,7 @@ void __terminate_jump()
     __timer_setup(quantumUsecs);
     std::cout << "debug tid " << tid << std::endl;
     std::cout << "debug queue " << readyQueue->front() << " size: " << readyQueue->size() << std::endl;
+    std::cout << "debug threads " << threads[tid] << std::endl;
     siglongjmp(threads[tid]->env, 1);
 }
 
