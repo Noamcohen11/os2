@@ -270,6 +270,8 @@ void __remove_from_database(int tid)
 
     if (it != readyQueue->end())
     {
+        std::cout << "debug tid " << tid << std::endl;
+        std::cout << "debug current_thread " << current_thread << std::endl;
         readyQueue->erase(it);
     }
 
@@ -277,6 +279,8 @@ void __remove_from_database(int tid)
     {
         if (sleepingVector->at(i) == tid)
         {
+            std::cout << "debug tid " << tid << std::endl;
+            std::cout << "debug current_thread " << current_thread << std::endl;
             sleepingVector->erase(sleepingVector->begin() + i);
         }
     }
@@ -404,8 +408,6 @@ int uthread_terminate(int tid)
         exit(0);
     }
     __remove_from_database(tid);
-    std::cout << "debug tid " << tid << std::endl;
-    std::cout << "debug current_thread " << current_thread << std::endl;
     __free_thread(tid);
     if (tid == current_thread)
     {
