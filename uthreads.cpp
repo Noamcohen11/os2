@@ -220,7 +220,7 @@ void __terminate_jump()
     std::cout << "debug tid " << tid << std::endl;
     std::cout << "debug queue " << readyQueue->front() << " size: " << readyQueue->size() << std::endl;
     std::cout << "debug threads " << threads[tid] << std::endl;
-    siglongjmp(threads[tid]->env, 1);
+    siglongjmp(threads[0]->env, 1);
 }
 
 /**
