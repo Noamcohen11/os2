@@ -130,7 +130,6 @@ void __yield(int tid, bool reset_timer = false)
 {
     int ret_val = sigsetjmp(threads[current_thread]->env, 1);
     bool did_just_save_bookmark = ret_val == 0;
-    std::cout << "current tid: " << tid << " curent thread :" << current_thread << " did_just_save_bookmark: " << did_just_save_bookmark << std::endl;
     if (did_just_save_bookmark)
     {
         current_thread = tid;
