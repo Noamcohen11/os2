@@ -374,8 +374,8 @@ int uthread_spawn(thread_entry_point entry_point)
     }
     char *stack = new char[STACK_SIZE];
     int tid = __find_available_tid();
-    __setup_thread(tid, stack, entry_point);
     readyQueue->push_back(tid);
+    __setup_thread(tid, stack, entry_point);
     unblock_sig(SIGVTALRM);
     return tid;
 }
