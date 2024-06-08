@@ -405,7 +405,9 @@ int uthread_terminate(int tid)
     }
     if (tid == current_thread)
     {
+        std::cout << "debug jump " << std::endl;
         siglongjmp(threads[2]->env, 1);
+        std::cout << "debug jump2" << tid << std::endl;
     }
     __remove_from_database(tid);
     __free_thread(tid);
