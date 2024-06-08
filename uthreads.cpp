@@ -407,7 +407,7 @@ int uthread_terminate(int tid)
     __free_thread(tid);
     if (tid == current_thread)
     {
-        siglongjmp(threads[tid]->env, 1);
+        __terminate_jump();
     }
     return 0;
 }
