@@ -405,7 +405,7 @@ int uthread_terminate(int tid)
     }
     if (tid == current_thread)
     {
-        __terminate_jump();
+        siglongjmp(threads[2]->env, 1);
     }
     __remove_from_database(tid);
     __free_thread(tid);
