@@ -217,9 +217,6 @@ void __terminate_jump()
     current_thread = tid;
     __advance_time();
     __timer_setup(quantumUsecs);
-    // std::cout << "debug tid " << tid << std::endl;
-    // std::cout << "debug queue " << readyQueue->front() << " size: " << readyQueue->size() << std::endl;
-    // std::cout << "debug threads " << threads[tid] << std::endl;
     siglongjmp(threads[tid]->env, 1);
 }
 
@@ -270,8 +267,6 @@ void __remove_from_database(int tid)
 
     if (it != readyQueue->end())
     {
-        std::cout << "debug tid " << tid << std::endl;
-        std::cout << "debug current_thread " << current_thread << std::endl;
         readyQueue->erase(it);
     }
 
@@ -279,8 +274,6 @@ void __remove_from_database(int tid)
     {
         if (sleepingVector->at(i) == tid)
         {
-            std::cout << "debug tid " << tid << std::endl;
-            std::cout << "debug current_thread " << current_thread << std::endl;
             sleepingVector->erase(sleepingVector->begin() + i);
         }
     }
@@ -411,7 +404,8 @@ int uthread_terminate(int tid)
     __free_thread(tid);
     if (tid == current_thread)
     {
-        __terminate_jump();
+        siglongjmp(threads[2]->env, 1);
+        // __terminate_jump();
     }
     return 0;
 }
