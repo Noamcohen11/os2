@@ -162,7 +162,7 @@ void __setup_thread(int tid, char *stack, thread_entry_point entry_point)
     // siglongjmp to jump into the thread.
     address_t sp = (address_t)stack + STACK_SIZE - sizeof(address_t);
     address_t pc = (address_t)entry_point;
-    threads[tid]->virtualtime = 0;
+    threads[tid]->virtualtime = 1;
     threads[tid]->sleeptimer = -1;
     threads[tid]->blocked = false;
 
