@@ -231,7 +231,7 @@ int main()
         // printf("thread 3: %d \n", thread_status[3]);
         // printf("thread 4: %d \n", thread_status[4]);
         // printf("thread 5: %d \n", thread_status[5]);
-        // printf("thread 6: %d \n", thread_status[6]);
+        printf("thread 6: %d \n", thread_status[6]);
     }
 
     merge(0, N, place_holder0);
