@@ -227,12 +227,12 @@ int main()
 
     while (thread_status[t1] == RUN || thread_status[t2] == RUN)
     {
-        // printf("thread 1: %d \n", thread_status[t1]);
-        // printf("thread 2: %d \n", thread_status[t2]);
-        // printf("thread 3: %d \n", thread_status[3]);
-        // printf("thread 4: %d \n", thread_status[4]);
-        // printf("thread 5: %d \n", thread_status[5]);
-        // printf("thread 6: %d \n", thread_status[6]);
+        printf("thread 1: %d \n", thread_status[t1]);
+        printf("thread 2: %d \n", thread_status[t2]);
+        printf("thread 3: %d \n", thread_status[3]);
+        printf("thread 4: %d \n", thread_status[4]);
+        printf("thread 5: %d \n", thread_status[5]);
+        printf("thread 6: %d \n", thread_status[6]);
     }
 
     merge(0, N, place_holder0);
