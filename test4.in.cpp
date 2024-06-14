@@ -15,51 +15,51 @@
 #include <list>
 #include <assert.h>
 #include "../uthreads.h"
-//#include "libuthread.a"
+// #include "libuthread.a"
 #include <iostream>
 
 using namespace std;
 
-void f (void)
+void f(void)
 {
-    while(1)
+    while (1)
     {
-//		cout << "f" << endl;
+        //		cout << "f" << endl;
         uthread_block(1);
     }
 }
 
-void g (void)
+void g(void)
 {
-    while(1)
+    while (1)
     {
-//		cout << "g" << endl;
+        //		cout << "g" << endl;
         uthread_block(2);
     }
 }
 
-void h (void)
+void h(void)
 {
-    while(1)
+    while (1)
     {
-//		cout << "h" << endl;
+        //		cout << "h" << endl;
         uthread_block(3);
     }
 }
 
 int main(void)
 {
-	int q[2] = {10, 20};
-	if (uthread_init(q, 2) == -1)
+    int q[2] = {10, 20};
+    if (uthread_init(1000) == -1)
     {
         return 0;
     }
 
-    uthread_spawn(f, 0);
-    uthread_spawn(g, 0);
-    uthread_spawn(h, 1);
+    uthread_spawn(f);
+    uthread_spawn(g);
+    uthread_spawn(h);
 
-    while(uthread_get_total_quantums() < 10)
+    while (uthread_get_total_quantums() < 10)
     {
         uthread_resume(1);
         uthread_resume(2);
@@ -74,7 +74,7 @@ int main(void)
 
     uthread_block(2);
 
-    while(uthread_get_total_quantums() < 20)
+    while (uthread_get_total_quantums() < 20)
     {
         uthread_resume(1);
         uthread_resume(3);
@@ -88,7 +88,7 @@ int main(void)
 
     uthread_resume(2);
 
-    while(uthread_get_total_quantums() < 30)
+    while (uthread_get_total_quantums() < 30)
     {
         uthread_resume(1);
         uthread_resume(2);
@@ -101,11 +101,6 @@ int main(void)
     cout << uthread_get_quantums(3) << endl;
     cout << " = " << uthread_get_total_quantums() << endl;
 
-
     uthread_terminate(0);
     return 0;
 }
-
-
-
-

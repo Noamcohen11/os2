@@ -14,14 +14,16 @@
 void halt()
 {
     while (true)
-    {}
+    {
+    }
 }
 
 void wait_next_quantum()
 {
     int quantum = uthread_get_quantums(uthread_get_tid());
     while (uthread_get_quantums(uthread_get_tid()) == quantum)
-    {}
+    {
+    }
     return;
 }
 
@@ -46,48 +48,46 @@ int main()
     printf(GRN "Test 1:    " RESET);
     fflush(stdout);
 
-	int q[2] = {10, 20};
-	if (uthread_init(q, 2) == -1)
-	{
-		error();
-	}
-    if (uthread_spawn(thread1, 0) != 1)
+    int q[2] = {10, 20};
+    if (uthread_init(1000) == -1)
+    {
         error();
-    if (uthread_spawn(thread2, 0) != 2)
+    }
+    if (uthread_spawn(thread1) != 1)
         error();
-    if (uthread_spawn(thread2, 0) != 3)
+    if (uthread_spawn(thread2) != 2)
         error();
-    if (uthread_spawn(thread1, 1) != 4)
+    if (uthread_spawn(thread2) != 3)
         error();
-    if (uthread_spawn(thread2, 1) != 5)
+    if (uthread_spawn(thread1) != 4)
         error();
-    if (uthread_spawn(thread1, 1) != 6)
+    if (uthread_spawn(thread2) != 5)
+        error();
+    if (uthread_spawn(thread1) != 6)
         error();
 
     uthread_terminate(5);
-    if (uthread_spawn(thread1, 0) != 5)
+    if (uthread_spawn(thread1) != 5)
         error();
-
 
     wait_next_quantum();
     wait_next_quantum();
 
     uthread_terminate(5);
-    if (uthread_spawn(thread1, 0) != 5)
+    if (uthread_spawn(thread1) != 5)
         error();
 
     uthread_terminate(2);
-    if (uthread_spawn(thread2, 1) != 2)
+    if (uthread_spawn(thread2) != 2)
         error();
 
     uthread_terminate(3);
     uthread_terminate(4);
-    if (uthread_spawn(thread2, 0) != 3)
+    if (uthread_spawn(thread2) != 3)
         error();
-    if (uthread_spawn(thread1, 1) != 4)
+    if (uthread_spawn(thread1) != 4)
         error();
 
     printf(GRN "SUCCESS\n" RESET);
     uthread_terminate(0);
-
 }

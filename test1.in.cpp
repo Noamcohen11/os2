@@ -17,17 +17,16 @@
 #include <list>
 #include <assert.h>
 #include "../uthreads.h"
-//#include "libuthread.a"
+// #include "libuthread.a"
 #include <iostream>
 
 using namespace std;
 
-
-void f (void)
+void f(void)
 {
     int i = 1;
     int j = 0;
-    while(1)
+    while (1)
     {
         if (i == uthread_get_quantums(uthread_get_tid()))
         {
@@ -56,11 +55,11 @@ void f (void)
     }
 }
 
-void g (void)
+void g(void)
 {
     int i = 1;
     int j = 0;
-    while(1)
+    while (1)
     {
         if (i == uthread_get_quantums(uthread_get_tid()))
         {
@@ -77,11 +76,10 @@ void g (void)
     }
 }
 
-
 int main(void)
 {
-	int q[2] = {10, 20};
-    if (uthread_init(q, 2) == -1)
+    int q[2] = {10, 20};
+    if (uthread_init(1000) == -1)
     {
         return 0;
     }
@@ -89,10 +87,10 @@ int main(void)
     int i = 1;
     int j = 0;
 
-    while(1)
+    while (1)
     {
-        //int a = uthread_get_quantums(uthread_get_tid());
-        //cout<<"quantums of thread number " << uthread_get_tid()<<" is " <<a<<std::endl;
+        // int a = uthread_get_quantums(uthread_get_tid());
+        // cout<<"quantums of thread number " << uthread_get_tid()<<" is " <<a<<std::endl;
         if (i == uthread_get_quantums(uthread_get_tid()))
         {
             cout << "m" << "  q:  " << i << endl;
@@ -139,7 +137,7 @@ int main(void)
             if (i == 20 && j == 5)
             {
                 j++;
-                //cout << "i: " << i << endl;
+                // cout << "i: " << i << endl;
                 cout << "          ******end******" << endl;
                 cout << "total quantums:  " << uthread_get_total_quantums() << endl;
                 uthread_terminate(0);
@@ -151,7 +149,3 @@ int main(void)
     cout << "end" << endl;
     return 0;
 }
-
-
-
-

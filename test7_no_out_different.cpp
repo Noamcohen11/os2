@@ -47,11 +47,14 @@ using namespace std;
 void f()
 {
     int printCount = 0;
-    for (int i = 0; ; i++)
+    for (int i = 0;; i++)
     {
-        if (i%PRINTER == 0)
+        if (i % PRINTER == 0)
         {
-            if (print) {cout << "in f(" << printCount << ")" << endl;}
+            if (print)
+            {
+                cout << "in f(" << printCount << ")" << endl;
+            }
             if (printCount == 7)
             {
                 break;
@@ -59,7 +62,10 @@ void f()
             printCount++;
         }
     }
-    if (print) {cout << "f terminates" << endl;}
+    if (print)
+    {
+        cout << "f terminates" << endl;
+    }
     int me = uthread_get_tid();
     uthread_terminate(me);
 }
@@ -70,11 +76,14 @@ void f()
 void g()
 {
     int printCount = 0;
-    for (int i = 0; ; i++)
+    for (int i = 0;; i++)
     {
-        if (i%PRINTER == 0)
+        if (i % PRINTER == 0)
         {
-            if (print) {cout << "in g(" << printCount << ")" << endl;}
+            if (print)
+            {
+                cout << "in g(" << printCount << ")" << endl;
+            }
             if (printCount == 13)
             {
                 break;
@@ -82,7 +91,10 @@ void g()
             printCount++;
         }
     }
-    if (print) {cout << "g terminates" << endl;}
+    if (print)
+    {
+        cout << "g terminates" << endl;
+    }
     int me = uthread_get_tid();
     uthread_terminate(me);
 }
@@ -93,11 +105,14 @@ void g()
 void neverEnding_h()
 {
     int printCount = 0;
-    for (int i = 0; ; i++)
+    for (int i = 0;; i++)
     {
-        if (i%PRINTER == 0)
+        if (i % PRINTER == 0)
         {
-            if (print) {cout << "in h(" << printCount << ")" << endl;}
+            if (print)
+            {
+                cout << "in h(" << printCount << ")" << endl;
+            }
             printCount++;
         }
     }
@@ -109,11 +124,14 @@ void neverEnding_h()
 void neverEnding_i()
 {
     int printCount = 0;
-    for (int i = 0; ; i++)
+    for (int i = 0;; i++)
     {
-        if (i%PRINTER == 0)
+        if (i % PRINTER == 0)
         {
-            if (print) {cout << "in i(" << printCount << ")" << endl;}
+            if (print)
+            {
+                cout << "in i(" << printCount << ")" << endl;
+            }
             printCount++;
         }
     }
@@ -125,11 +143,14 @@ void neverEnding_i()
 void neverEnding_j()
 {
     int printCount = 0;
-    for (int i = 0; ; i++)
+    for (int i = 0;; i++)
     {
-        if (i%PRINTER == 0)
+        if (i % PRINTER == 0)
         {
-            if (print) {cout << "in j(" << printCount << ")" << endl;}
+            if (print)
+            {
+                cout << "in j(" << printCount << ")" << endl;
+            }
             printCount++;
         }
     }
@@ -138,7 +159,7 @@ void neverEnding_j()
 ///**
 // * A simple function that sends it self to sleep.
 // */
-//void sleeper()
+// void sleeper()
 //{
 //    int printCount = 0;
 //    for (int i = 0; ; i++)
@@ -174,118 +195,184 @@ void neverEnding_j()
 void blocker()
 {
     int printCount = 0;
-    for (int i = 0; ; i++)
+    for (int i = 0;; i++)
     {
-        if (i%PRINTER == 0)
+        if (i % PRINTER == 0)
         {
-            if (print) {cout << "in blocker(" << printCount << ")" << endl;}
+            if (print)
+            {
+                cout << "in blocker(" << printCount << ")" << endl;
+            }
 
             if (printCount == 3)
             {
-                if (print) {cout << "blocker blocks f (tid = 1)!" << endl;}
+                if (print)
+                {
+                    cout << "blocker blocks f (tid = 1)!" << endl;
+                }
                 uthread_block(1);
             }
 
             if (printCount == 11)
             {
-                if (print) {cout << "blocker unblocks f (tid = 1)!" << endl;}
+                if (print)
+                {
+                    cout << "blocker unblocks f (tid = 1)!" << endl;
+                }
                 uthread_resume(1);
             }
 
             if (printCount == 40)
             {
-                if (print) {cout << "blocker blocks himself!" << endl;}
+                if (print)
+                {
+                    cout << "blocker blocks himself!" << endl;
+                }
                 uthread_block(uthread_get_tid());
-                if (print) {cout << "blocker was resumed!" << endl;}
+                if (print)
+                {
+                    cout << "blocker was resumed!" << endl;
+                }
                 break;
             }
             printCount++;
         }
     }
-    if (print) {cout << "blocker terminates" << endl;}
+    if (print)
+    {
+        cout << "blocker terminates" << endl;
+    }
     int me = uthread_get_tid();
     uthread_terminate(me);
 }
 
-
 int main()
 {
 
-	int q[2] = {10, 20};
-	int init = uthread_init(q, 2);
+    int q[2] = {10, 20};
+    int init = uthread_init(1000);
 
-    if (print) {cout << "MAIN INIT : " << init << endl << endl;}
+    if (print)
+    {
+        cout << "MAIN INIT : " << init << endl
+             << endl;
+    }
 
-    int fid = uthread_spawn(&f, 0);
-    if (print) {cout << "MAIN SPAWNS f : " << fid << endl;}
+    int fid = uthread_spawn(&f);
+    if (print)
+    {
+        cout << "MAIN SPAWNS f : " << fid << endl;
+    }
 
-    int gid = uthread_spawn(&g, 1);
-    if (print) {cout << "MAIN SPAWNS g : " << gid << endl;}
+    int gid = uthread_spawn(&g);
+    if (print)
+    {
+        cout << "MAIN SPAWNS g : " << gid << endl;
+    }
 
-    int hid = uthread_spawn(&neverEnding_h, 0);
-    if (print) {cout << "MAIN SPAWNS h : " << hid << endl;}
+    int hid = uthread_spawn(&neverEnding_h);
+    if (print)
+    {
+        cout << "MAIN SPAWNS h : " << hid << endl;
+    }
 
-    int iid = uthread_spawn(&neverEnding_i, 1);
-    if (print) {cout << "MAIN SPAWNS i : " << iid << endl;}
+    int iid = uthread_spawn(&neverEnding_i);
+    if (print)
+    {
+        cout << "MAIN SPAWNS i : " << iid << endl;
+    }
 
-    int jid = uthread_spawn(&neverEnding_j, 0);
-    if (print) {cout << "MAIN SPAWNS j : " << jid << endl;}
+    int jid = uthread_spawn(&neverEnding_j);
+    if (print)
+    {
+        cout << "MAIN SPAWNS j : " << jid << endl;
+    }
 
-//    int sleeperid = uthread_spawn(&sleeper, 1);
-//    if (print) {cout << "MAIN SPAWNS sleeper : " << sleeperid << endl;}
+    //    int sleeperid = uthread_spawn(&sleeper);
+    //    if (print) {cout << "MAIN SPAWNS sleeper : " << sleeperid << endl;}
 
-    int blockerid = uthread_spawn(&blocker, 0);
-    if (print) {cout << "MAIN SPAWNS blockerid : " << blockerid << endl;}
+    int blockerid = uthread_spawn(&blocker);
+    if (print)
+    {
+        cout << "MAIN SPAWNS blockerid : " << blockerid << endl;
+    }
 
-    if (print) {cout << endl << "MAIN RUNS!" << endl;}
+    if (print)
+    {
+        cout << endl
+             << "MAIN RUNS!" << endl;
+    }
 
     int printCount = 0;
-    for (int i = 0; ; i++)
+    for (int i = 0;; i++)
     {
-        if (i%PRINTER == 0)
+        if (i % PRINTER == 0)
         {
-            if (print) {cout << "IN MAIN(" << printCount << ")" << endl;}
+            if (print)
+            {
+                cout << "IN MAIN(" << printCount << ")" << endl;
+            }
 
             if (printCount == 20)
             {
-//                if (print) {cout << "GOOD-ERR Main blocks sleeping sleeper!" << endl;}
-//                uthread_block(sleeperid);
-//                if (print) {cout << "ERR Main unblocks sleeping sleeper!" << endl;}
-//                uthread_resume(sleeperid);
-                if (print) {cout << "ERR Main blocks non-existent 99!" << endl;}
+                //                if (print) {cout << "GOOD-ERR Main blocks sleeping sleeper!" << endl;}
+                //                uthread_block(sleeperid);
+                //                if (print) {cout << "ERR Main unblocks sleeping sleeper!" << endl;}
+                //                uthread_resume(sleeperid);
+                if (print)
+                {
+                    cout << "ERR Main blocks non-existent 99!" << endl;
+                }
                 uthread_block(99);
-                if (print) {cout << "ERR Main unblocks non-existent 101!" << endl;}
+                if (print)
+                {
+                    cout << "ERR Main unblocks non-existent 101!" << endl;
+                }
                 uthread_block(101);
-                if (print) {cout << "ERR Main asks to block himself!" << endl;}
+                if (print)
+                {
+                    cout << "ERR Main asks to block himself!" << endl;
+                }
                 uthread_block(uthread_get_tid());
             }
 
             if (printCount == 30)
             {
-                if (print) {cout << "Main removes h,i!" << endl;}
+                if (print)
+                {
+                    cout << "Main removes h,i!" << endl;
+                }
                 uthread_terminate(hid);
                 uthread_terminate(iid);
 
-//                if (print) {cout << "ERR Main unblocks sleeping sleeper!" << endl;}
-//                uthread_resume(sleeperid);
+                //                if (print) {cout << "ERR Main unblocks sleeping sleeper!" << endl;}
+                //                uthread_resume(sleeperid);
             }
-
 
             if (printCount == 45)
             {
-                if (print) {cout << "Main unblocks blocker (which blocked himself)!" << endl;}
+                if (print)
+                {
+                    cout << "Main unblocks blocker (which blocked himself)!" << endl;
+                }
                 uthread_resume(blockerid);
             }
 
             if (printCount == 52)
             {
-                if (print) {cout << "Main blocks blocker!" << endl;}
+                if (print)
+                {
+                    cout << "Main blocks blocker!" << endl;
+                }
                 uthread_block(blockerid);
             }
 
             if (printCount == 58)
             {
-                if (print) {cout << "Main removes blocker!" << endl;}
+                if (print)
+                {
+                    cout << "Main removes blocker!" << endl;
+                }
                 uthread_terminate(blockerid);
             }
 
@@ -297,7 +384,10 @@ int main()
         }
     }
 
-    if (print) {cout << "MAIN TERMINATES WILE j IS ALIVE" << endl;}
+    if (print)
+    {
+        cout << "MAIN TERMINATES WILE j IS ALIVE" << endl;
+    }
     int me = uthread_get_tid();
     uthread_terminate(me);
 }

@@ -215,7 +215,7 @@ int main()
     }
 
     int q[2] = {10, 20};
-    uthread_init(1000);
+    uthread_init(10000);
 
     int t1 = uthread_spawn(thread1);
     int t2 = uthread_spawn(thread2);
