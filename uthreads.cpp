@@ -157,7 +157,17 @@ void __yield(int tid, bool reset_timer = false)
  */
 void __setup_thread(int tid, char *stack, thread_entry_point entry_point)
 {
-    threads[tid] = new Thread;
+    threads[tid] = nullptr;
+    try
+    {
+        threads[tid] = new Thread;
+    }
+    catch (std::bad_alloc &e)
+    {
+        std::cerr << SYS_ERROR << "malloc failure.\n";
+        return;
+    }
+
     // initializes env[tid] to use the right stack, and to run from the function 'entry_point', when we'll use
     // siglongjmp to jump into the thread.
     address_t sp = (address_t)stack + STACK_SIZE - sizeof(address_t);
@@ -313,8 +323,6 @@ void __timer_setup(int quantum_usecs)
     }
 }
 
-// TODO: understand how to malloc in cpp.
-
 /**
  * @brief initializes the thread library.
  *
@@ -331,8 +339,16 @@ void __timer_setup(int quantum_usecs)
  */
 int uthread_init(int quantum_usecs)
 {
-    readyQueue = new std::deque<int>;
-    sleepingVector = new std::vector<int>;
+    try
+    {
+        readyQueue = new std::deque<int>;
+        sleepingVector = new std::vector<int>;
+    }
+    catch (std::bad_alloc &e)
+    {
+        std::cerr << SYS_ERROR << "malloc failure.\n";
+        return -1;
+    }
     if (quantum_usecs <= 0)
     {
         std::cerr << LIB_ERROR << "invalid quantum_usecs\n";
@@ -366,14 +382,22 @@ int uthread_spawn(thread_entry_point entry_point)
         unblock_sig(SIGVTALRM);
         return -1;
     }
-    // TODO maybe nullpointer.
     if (entry_point == NULL)
     {
         std::cerr << LIB_ERROR << "null entry point\n";
         unblock_sig(SIGVTALRM);
         return -1;
     }
-    char *stack = new char[STACK_SIZE];
+    char *stack = NULL;
+    try
+    {
+        char *stack = new char[STACK_SIZE];
+    }
+    catch (std::bad_alloc &e)
+    {
+        std::cerr << SYS_ERROR << "malloc failure.\n";
+        return -1;
+    }
     int tid = __find_available_tid();
     readyQueue->push_back(tid);
     __setup_thread(tid, stack, entry_point);
