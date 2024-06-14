@@ -48,8 +48,7 @@ int main()
     printf(GRN "Test 1:    " RESET);
     fflush(stdout);
 
-    int q[2] = {10, 20};
-    uthread_init(q, 2);
+    uthread_init(1000);
     if (uthread_spawn(thread1) != 1)
         error();
     if (uthread_spawn(thread2) != 2)
