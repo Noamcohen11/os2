@@ -159,6 +159,7 @@ void thread1()
 
     while (thread_status[t3] == RUN || thread_status[t4] == RUN)
     {
+        printf("t1");
     }
 
     merge(0, N / 2, place_holder1);
@@ -226,7 +227,6 @@ int main()
 
     while (thread_status[t1] == RUN || thread_status[t2] == RUN)
     {
-        printf("t1");
     }
 
     merge(0, N, place_holder0);
