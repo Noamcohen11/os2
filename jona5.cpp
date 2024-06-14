@@ -180,12 +180,6 @@ void thread2()
 
     while (thread_status[t5] == RUN || thread_status[t6] == RUN)
     {
-        printf("thread 1: %d \n", thread_status[1]);
-        printf("thread 2: %d \n", thread_status[2]);
-        printf("thread 3: %d \n", thread_status[3]);
-        printf("thread 4: %d \n", thread_status[4]);
-        printf("thread 5: %d \n", thread_status[5]);
-        printf("thread 6: %d \n", thread_status[6]);
     }
     printf("t2 starting");
     merge(N / 2, N, place_holder2);
