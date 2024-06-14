@@ -378,7 +378,7 @@ int uthread_init(int quantum_usecs)
 int uthread_spawn(thread_entry_point entry_point)
 {
     block_sig(SIGVTALRM);
-    if (readyQueue->size() == MAX_THREAD_NUM)
+    if (readyQueue->size() == MAX_THREAD_NUM - 1)
     {
         std::cerr << LIB_ERROR << "thread overflow\n";
         unblock_sig(SIGVTALRM);
