@@ -241,8 +241,8 @@ void __terminate_jump()
  */
 void __time_handler(int sig)
 {
-    printf("ready0: %d", readyQueue->front());
-    printf("size: %d", readyQueue->size());
+    printf("ready0: %d \n", readyQueue->front());
+    printf("size: %d \n", readyQueue->size());
     readyQueue->push_back(current_thread);
     __thread_popper();
 }
