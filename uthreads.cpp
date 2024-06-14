@@ -211,7 +211,6 @@ void __thread_popper(bool reset_timer = false)
 {
     int tid = readyQueue->front();
     readyQueue->pop_front();
-    printf("tid: %d", tid);
     __yield(tid, reset_timer);
 }
 
@@ -242,6 +241,8 @@ void __terminate_jump()
  */
 void __time_handler(int sig)
 {
+    printf("ready0: %d", readyQueue->front());
+    printf("size: %d", readyQueue->size());
     readyQueue->push_back(current_thread);
     __thread_popper();
 }
