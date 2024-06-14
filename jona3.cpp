@@ -26,7 +26,8 @@ void wait_next_quantum()
 {
     int quantum = uthread_get_quantums(uthread_get_tid());
     while (uthread_get_quantums(uthread_get_tid()) == quantum)
-    {}
+    {
+    }
     return;
 }
 
@@ -40,7 +41,7 @@ void run_test()
         arr[i] = i * tid;
     }
 
-    //uthread_sync(next_thread());
+    // uthread_sync(next_thread());
 
     for (int i = 0; i < 10; i++)
     {
@@ -55,7 +56,6 @@ void run_test()
 
     // let switching be invoked by the timer
     wait_next_quantum();
-
 
     if ((b1 != tid * 314) || (b2 != tid * 141) || (tid != uthread_get_tid()))
     {
@@ -77,31 +77,28 @@ bool all_done()
     return res;
 }
 
-
 int main()
 {
     printf(GRN "Test 42:   " RESET);
     fflush(stdout);
 
-	int q[2] = {10, 20};
-	uthread_init(q, 2);
-    uthread_spawn(run_test, 0);
-    uthread_spawn(run_test, 1);
-    uthread_spawn(run_test, 0);
-    uthread_spawn(run_test, 1);
-    uthread_spawn(run_test, 0);
-    uthread_spawn(run_test, 0);
+    uthread_init(1000);
+    uthread_spawn(run_test);
+    uthread_spawn(run_test);
+    uthread_spawn(run_test);
+    uthread_spawn(run_test);
+    uthread_spawn(run_test);
+    uthread_spawn(run_test);
 
     for (int i = 1; i < NUM_THREADS; i++)
     {
         thread_status[i] = RUN;
     }
 
-
     while (!all_done())
-    {}
+    {
+    }
 
     printf(GRN "SUCCESS\n" RESET);
     uthread_terminate(0);
-
 }

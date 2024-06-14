@@ -15,11 +15,11 @@
 #define DONE 1
 char thread_status[NUM_THREADS];
 
-
 void halt()
 {
     while (true)
-    {}
+    {
+    }
 }
 
 int next_thread()
@@ -29,9 +29,9 @@ int next_thread()
 
 void thread()
 {
-    //uthread_sync(next_thread());
+    // uthread_sync(next_thread());
 
-    //uthread_sync(next_thread());
+    // uthread_sync(next_thread());
 
     uthread_block(uthread_get_tid());
 
@@ -60,11 +60,10 @@ int main()
     printf(GRN "Test 5:    " RESET);
     fflush(stdout);
 
-	int q[2] = {10, 20};
-	uthread_init(q, 2);
-    uthread_spawn(thread, 0);
-    uthread_spawn(thread, 0);
-    uthread_spawn(thread, 1);
+    uthread_init(1000);
+    uthread_spawn(thread);
+    uthread_spawn(thread);
+    uthread_spawn(thread);
 
     for (int i = 0; i < NUM_THREADS; i++)
     {
@@ -78,5 +77,4 @@ int main()
 
     printf(GRN "SUCCESS\n" RESET);
     uthread_terminate(0);
-
 }

@@ -8,19 +8,15 @@
  *
  **********************************************/
 
-
-
 #include <signal.h>
 #include <cstdlib>
 #include <cstring>
 #include <cstdio>
 #include "uthreads.h"
 
-
 #define GRN "\e[32m"
 #define RED "\x1B[31m"
 #define RESET "\x1B[0m"
-
 
 #define NUM_THREADS 4
 
@@ -34,16 +30,16 @@ char thread_status[NUM_THREADS];
 void halt()
 {
     while (true)
-    {}
+    {
+    }
 }
-
 
 int next_thread()
 {
     return (uthread_get_tid() + 1) % NUM_THREADS;
 }
 
-void check_sig_mask(const sigset_t& expected)
+void check_sig_mask(const sigset_t &expected)
 {
     for (unsigned int i = 0; i <= 20; i++)
     {
@@ -59,7 +55,7 @@ void check_sig_mask(const sigset_t& expected)
         // in later iterations it will stop because of the timer
         if (i < 5)
         {
-            //uthread_sync(next_thread());
+            // uthread_sync(next_thread());
         }
         else if (i < 10)
         {
@@ -69,7 +65,8 @@ void check_sig_mask(const sigset_t& expected)
         {
             int quantum = uthread_get_quantums(uthread_get_tid());
             while (uthread_get_quantums(uthread_get_tid()) == quantum)
-            {}
+            {
+            }
         }
     }
     thread_status[uthread_get_tid()] = DONE;
@@ -128,24 +125,23 @@ int main()
     sigaddset(&set3, SIGTTOU);
     sigaddset(&set3, SIGBUS);
 
-	int q[2] = {10, 20};
-	uthread_init(q, 2);
+    int q[2] = {10, 20};
+    uthread_init(1000);
 
     for (int i = 1; i < NUM_THREADS; i++)
     {
         thread_status[i] = RUN;
     }
 
-    int t1 = uthread_spawn(thread1, 0);
-    int t2 = uthread_spawn(thread2, 0);
-    int t3 = uthread_spawn(thread3, 1);
+    int t1 = uthread_spawn(thread1);
+    int t2 = uthread_spawn(thread2);
+    int t3 = uthread_spawn(thread3);
 
     if (t1 == -1 || t2 == -1 || t3 == -1)
     {
         printf(RED "ERROR - threads spawning failed\n" RESET);
         exit(1);
     }
-
 
     int tid = 0;
     while (!all_done())
@@ -154,7 +150,6 @@ int main()
         uthread_resume(tid);
         tid = (tid + 1) % NUM_THREADS;
     }
-
 
     printf(GRN "SUCCESS\n" RESET);
     uthread_terminate(0);

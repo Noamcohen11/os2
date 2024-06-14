@@ -16,12 +16,10 @@
  *             k=2
  */
 
-
 #include <cstdio>
 #include <cstdlib>
 #include <time.h>
 #include "uthreads.h"
-
 
 #define GRN "\e[32m"
 #define RED "\x1B[31m"
@@ -40,11 +38,11 @@ char thread_status[NUM_THREADS];
 
 ulong partial_calc[NUM_THREADS];
 
-
 void halt()
 {
     while (true)
-    {}
+    {
+    }
 }
 
 int rand_tid()
@@ -65,10 +63,10 @@ void random_uthreads_call()
     }
     else
     {
-//        if (tid != uthread_get_tid())
-//        {
-//            uthread_sync(tid);
-//        }
+        //        if (tid != uthread_get_tid())
+        //        {
+        //            uthread_sync(tid);
+        //        }
     }
     uthread_resume(rand_tid());
 }
@@ -142,7 +140,6 @@ void thread5()
     summon_calculator(false, 3, 2);
 }
 
-
 bool all_done()
 {
     bool res = true;
@@ -152,7 +149,6 @@ bool all_done()
     }
     return res;
 }
-
 
 int main()
 {
@@ -164,14 +160,13 @@ int main()
     // threads 1,2,3 - numerator
     // threads 4,5 - denominator
 
-	int q[2] = {10, 20};
-	uthread_init(q, 2);
+    uthread_init(1000);
 
-    uthread_spawn(thread1, 0);
-    uthread_spawn(thread2, 0);
-    uthread_spawn(thread3, 0);
-    uthread_spawn(thread4, 1);
-    uthread_spawn(thread5, 1);
+    uthread_spawn(thread1);
+    uthread_spawn(thread2);
+    uthread_spawn(thread3);
+    uthread_spawn(thread4);
+    uthread_spawn(thread5);
 
     for (int i = 1; i < NUM_THREADS; i++)
     {
@@ -198,5 +193,4 @@ int main()
         printf(RED "ERROR - failed to correctly calculate catalan number\n" RESET);
     }
     uthread_terminate(0);
-
 }

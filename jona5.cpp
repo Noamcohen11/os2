@@ -3,8 +3,6 @@
  *
  **********************************************/
 
-
-
 /*
  *          main              (merge N-size array)
  *         /    \
@@ -20,9 +18,6 @@
  * and is not recommended to be used for real sorting purposes
  *
  */
-
-
-
 
 #include <cstdlib>
 #include <cstdio>
@@ -45,9 +40,7 @@ int array[ARRAY_SIZE];
 
 int place_holder0[N], place_holder1[N / 2], place_holder2[N / 2];
 
-
 void printArray();
-
 
 int rand_tid()
 {
@@ -58,7 +51,8 @@ void wait_next_quantum()
 {
     int quantum = uthread_get_quantums(uthread_get_tid());
     while (uthread_get_quantums(uthread_get_tid()) == quantum)
-    {}
+    {
+    }
     return;
 }
 
@@ -83,14 +77,12 @@ void sort(int start, int end)
             wait_next_quantum();
         }
     }
-
 }
-
 
 /*
  * merges array[start..end/2-1] and array[end/2..end-1]
  */
-void merge(int start, int end, int* place_holder)
+void merge(int start, int end, int *place_holder)
 {
 
     int start1 = start, end1 = (end + start) / 2;
@@ -125,7 +117,6 @@ void merge(int start, int end, int* place_holder)
 
     // copy from place_holder to original array
     memcpy(array + start1, place_holder, sizeof(int) * (end2 - start1));
-
 }
 
 void sorting_thread(int start, int end)
@@ -155,11 +146,10 @@ void thread6()
     sorting_thread(3 * N / 4, N);
 }
 
-
 void thread1()
 {
-    int t3 = uthread_spawn(thread3, 0);
-    int t4 = uthread_spawn(thread4, 1);
+    int t3 = uthread_spawn(thread3);
+    int t4 = uthread_spawn(thread4);
 
     if (t3 == -1 || t4 == -1)
     {
@@ -168,7 +158,8 @@ void thread1()
     }
 
     while (thread_status[t3] == RUN || thread_status[t4] == RUN)
-    {}
+    {
+    }
 
     merge(0, N / 2, place_holder1);
     thread_status[uthread_get_tid()] = DONE;
@@ -177,8 +168,8 @@ void thread1()
 
 void thread2()
 {
-    int t5 = uthread_spawn(thread5, 0);
-    int t6 = uthread_spawn(thread6, 1);
+    int t5 = uthread_spawn(thread5);
+    int t6 = uthread_spawn(thread6);
 
     if (t5 == -1 || t6 == -1)
     {
@@ -187,7 +178,8 @@ void thread2()
     }
 
     while (thread_status[t5] == RUN || thread_status[t6] == RUN)
-    {}
+    {
+    }
 
     merge(N / 2, N, place_holder2);
     thread_status[uthread_get_tid()] = DONE;
@@ -203,7 +195,6 @@ void printArray()
     printf("\n");
 }
 
-
 int main()
 {
     printf(GRN "Test 1430: " RESET);
@@ -216,17 +207,16 @@ int main()
         array[i] = rand() % 4862;
     }
 
-
     for (int i = 1; i < NUM_THREADS; i++)
     {
         thread_status[i] = RUN;
     }
 
-	int q[2] = {10, 20};
-	uthread_init(q, 2);
+    int q[2] = {10, 20};
+    uthread_init(1000);
 
-    int t1 = uthread_spawn(thread1, 0);
-    int t2 = uthread_spawn(thread2, 1);
+    int t1 = uthread_spawn(thread1);
+    int t2 = uthread_spawn(thread2);
     if (t1 == -1 || t2 == -1)
     {
         printf(RED "ERROR - thread spawn failed\n" RESET);
@@ -234,7 +224,8 @@ int main()
     }
 
     while (thread_status[t1] == RUN || thread_status[t2] == RUN)
-    {}
+    {
+    }
 
     merge(0, N, place_holder0);
 
@@ -250,5 +241,4 @@ int main()
 
     printf(GRN "SUCCESS\n" RESET);
     uthread_terminate(0);
-
 }
