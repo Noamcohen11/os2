@@ -388,21 +388,21 @@ int uthread_spawn(thread_entry_point entry_point)
         unblock_sig(SIGVTALRM);
         return -1;
     }
-    char *stack = nullptr;
     try
     {
         char *stack = new char[STACK_SIZE];
+        int tid = __find_available_tid();
+        readyQueue->push_back(tid);
+        __setup_thread(tid, stack, entry_point);
+        unblock_sig(SIGVTALRM);
+        return tid;
     }
     catch (std::bad_alloc &e)
     {
         std::cerr << SYS_ERROR << "malloc failure.\n";
         return -1;
     }
-    int tid = __find_available_tid();
-    readyQueue->push_back(tid);
-    __setup_thread(tid, stack, entry_point);
-    unblock_sig(SIGVTALRM);
-    return tid;
+    return -1;
 }
 
 /**
