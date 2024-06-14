@@ -160,7 +160,7 @@ void thread1()
     while (thread_status[t3] == RUN || thread_status[t4] == RUN)
     {
     }
-
+    printf("t1 starting");
     merge(0, N / 2, place_holder1);
     thread_status[uthread_get_tid()] = DONE;
     uthread_terminate(uthread_get_tid());
@@ -180,7 +180,7 @@ void thread2()
     while (thread_status[t5] == RUN || thread_status[t6] == RUN)
     {
     }
-
+    printf("t2 starting");
     merge(N / 2, N, place_holder2);
     thread_status[uthread_get_tid()] = DONE;
     uthread_terminate(uthread_get_tid());
@@ -225,12 +225,12 @@ int main()
 
     while (thread_status[t1] == RUN || thread_status[t2] == RUN)
     {
-        printf("thread 1: %d \n", thread_status[t1]);
-        printf("thread 2: %d \n", thread_status[t2]);
-        printf("thread 3: %d \n", thread_status[3]);
-        printf("thread 4: %d \n", thread_status[4]);
-        printf("thread 5: %d \n", thread_status[5]);
-        printf("thread 6: %d \n", thread_status[6]);
+        // printf("thread 1: %d \n", thread_status[t1]);
+        // printf("thread 2: %d \n", thread_status[t2]);
+        // printf("thread 3: %d \n", thread_status[3]);
+        // printf("thread 4: %d \n", thread_status[4]);
+        // printf("thread 5: %d \n", thread_status[5]);
+        // printf("thread 6: %d \n", thread_status[6]);
     }
 
     merge(0, N, place_holder0);
