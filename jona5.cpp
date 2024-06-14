@@ -224,7 +224,7 @@ int main()
         printf(RED "ERROR - thread spawn failed\n" RESET);
         uthread_terminate(0);
     }
-    int x = 0;
+
     while (thread_status[t1] == RUN || thread_status[t2] == RUN)
     {
         // printf("thread 1: %d \n", thread_status[t1]);
@@ -233,7 +233,6 @@ int main()
         // printf("thread 4: %d \n", thread_status[4]);
         // printf("thread 5: %d \n", thread_status[5]);
         // printf("thread 6: %d \n", thread_status[6]);
-        x = x + 1;
     }
 
     merge(0, N, place_holder0);
